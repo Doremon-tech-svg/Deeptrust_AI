@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DeepTrust AI — Deepfake Detection</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.1/ethers.umd.min.js"></script>
+</head>
+<body>
+  <!-- Animated Cyber Grid -->
+  <div class="cyber-grid" id="cyberGrid"></div>
+  <div class="scanline"></div>
+
+  <!-- Floating Particles -->
+  <div class="particles" id="particles"></div>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="logo-group">
+      <div class="logo-icon">
+        <svg viewBox="0 0 40 40" fill="none">
+          <polygon points="20,2 38,11 38,29 20,38 2,29 2,11" stroke="#00f5ff" stroke-width="1.5" fill="none"/>
+          <polygon points="20,8 32,14 32,26 20,32 8,26 8,14" stroke="#00f5ff" stroke-width="0.8" fill="rgba(0,245,255,0.05)"/>
+          <circle cx="20" cy="20" r="5" fill="#00f5ff" opacity="0.9"/>
+          <line x1="20" y1="2" x2="20" y2="8" stroke="#00f5ff" stroke-width="1"/>
+          <line x1="20" y1="32" x2="20" y2="38" stroke="#00f5ff" stroke-width="1"/>
+          <line x1="2" y1="11" x2="8" y2="14" stroke="#00f5ff" stroke-width="1"/>
+          <line x1="32" y1="26" x2="38" y2="29" stroke="#00f5ff" stroke-width="1"/>
+          <line x1="38" y1="11" x2="32" y2="14" stroke="#00f5ff" stroke-width="1"/>
+          <line x1="8" y1="26" x2="2" y2="29" stroke="#00f5ff" stroke-width="1"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="logo-text">DEEP<span>TRUST</span></h1>
+        <p class="logo-sub">NEURAL VERIFICATION SYSTEM v2.0</p>
+      </div>
+    </div>
+    <div class="header-status">
+      <span class="status-dot" id="statusDot"></span>
+      <span class="status-text" id="statusText">SYSTEM ONLINE</span>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main">
+
+    <!-- Upload Zone -->
+    <section class="panel upload-panel">
+      <div class="panel-header">
+        <span class="panel-tag">01</span>
+        <h2>FACIAL INPUT</h2>
+        <div class="panel-line"></div>
+      </div>
+
+      <div class="upload-zone" id="uploadZone">
+        <input type="file" id="fileInput" accept="image/*" hidden/>
+        <div class="upload-inner" id="uploadInner">
+          <div class="upload-icon">
+            <svg viewBox="0 0 64 64" fill="none">
+              <rect x="8" y="8" width="48" height="48" rx="4" stroke="#00f5ff" stroke-width="1.5" stroke-dasharray="4 4"/>
+              <circle cx="32" cy="28" r="8" stroke="#00f5ff" stroke-width="1.5"/>
+              <path d="M18 50c0-7.7 6.3-14 14-14s14 6.3 14 14" stroke="#00f5ff" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M32 12 L32 20 M28 16 L32 12 L36 16" stroke="#ff007a" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <p class="upload-title">DROP FACIAL IMAGE</p>
+          <p class="upload-sub">PNG / JPG / WEBP — Max 10MB</p>
+          <button class="btn-upload" onclick="document.getElementById('fileInput').click()">SELECT FILE</button>
+        </div>
+        <!-- Preview Canvas -->
+        <canvas id="previewCanvas" class="preview-canvas hidden"></canvas>
+      </div>
+
+      <!-- Image Info -->
+      <div class="image-info hidden" id="imageInfo">
+        <div class="info-row">
+          <span class="info-label">FILE</span><span class="info-val" id="infoName">—</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">SIZE</span><span class="info-val" id="infoSize">—</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">DIMS</span><span class="info-val" id="infoDims">—</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">HASH</span><span class="info-val hash-val" id="infoHash">—</span>
+        </div>
+      </div>
+
+      <button class="btn-analyze" id="analyzeBtn" disabled onclick="analyzeImage()">
+        <span class="btn-text">INITIATE ANALYSIS</span>
+        <span class="btn-arrow">›</span>
+      </button>
+    </section>
+
+    <!-- Results Panel -->
+    <section class="panel results-panel">
+      <div class="panel-header">
+        <span class="panel-tag">02</span>
+        <h2>ANALYSIS RESULTS</h2>
+        <div class="panel-line"></div>
+      </div>
+
+      <!-- Idle State -->
+      <div class="results-idle" id="resultsIdle">
+        <div class="idle-grid">
+          <div class="idle-cell">AWAITING INPUT</div>
+          <div class="idle-cell">MODEL PRIMED</div>
+          <div class="idle-cell">CHAIN READY</div>
+          <div class="idle-cell">NODE ACTIVE</div>
+        </div>
+        <p class="idle-msg">Upload an image to begin neural scan</p>
+      </div>
+
+      <!-- Loading State -->
+      <div class="results-loading hidden" id="resultsLoading">
+        <div class="scan-ring">
+          <div class="ring r1"></div>
+          <div class="ring r2"></div>
+          <div class="ring r3"></div>
+          <div class="scan-face-icon">
+            <svg viewBox="0 0 50 50" fill="none">
+              <circle cx="25" cy="20" r="10" stroke="#00f5ff" stroke-width="1.5"/>
+              <path d="M12 42c0-7.2 5.8-13 13-13s13 5.8 13 13" stroke="#00f5ff" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+        <div class="loading-log" id="loadingLog"></div>
+      </div>
+
+      <!-- Result State -->
+      <div class="results-output hidden" id="resultsOutput">
+        <!-- Verdict Badge -->
+        <div class="verdict-container">
+          <div class="verdict-badge" id="verdictBadge">
+            <div class="verdict-glow"></div>
+            <span class="verdict-label" id="verdictLabel">—</span>
+          </div>
+        </div>
+
+        <!-- Score Meter -->
+        <div class="score-section">
+          <div class="score-header">
+            <span>DEEPFAKE PROBABILITY</span>
+            <span class="score-num" id="scoreNum">0%</span>
+          </div>
+          <div class="score-bar-track">
+            <div class="score-bar-fill" id="scoreBarFill"></div>
+            <div class="score-bar-marker" id="scoreBarMarker"></div>
+          </div>
+          <div class="score-labels">
+            <span>AUTHENTIC</span>
+            <span>SUSPICIOUS</span>
+            <span>SYNTHETIC</span>
+          </div>
+        </div>
+
+        <!-- Confidence Rings -->
+        <div class="metrics-row">
+          <div class="metric-box">
+            <svg class="ring-svg" viewBox="0 0 80 80">
+              <circle cx="40" cy="40" r="32" stroke="#1a2a3a" stroke-width="6" fill="none"/>
+              <circle cx="40" cy="40" r="32" stroke="#00f5ff" stroke-width="6" fill="none"
+                stroke-dasharray="201" stroke-dashoffset="201"
+                stroke-linecap="round" transform="rotate(-90 40 40)"
+                id="ring1" class="ring-progress"/>
+            </svg>
+            <span class="metric-val" id="metricConf">0%</span>
+            <span class="metric-label">CONFIDENCE</span>
+          </div>
+          <div class="metric-box">
+            <svg class="ring-svg" viewBox="0 0 80 80">
+              <circle cx="40" cy="40" r="32" stroke="#1a2a3a" stroke-width="6" fill="none"/>
+              <circle cx="40" cy="40" r="32" stroke="#ff007a" stroke-width="6" fill="none"
+                stroke-dasharray="201" stroke-dashoffset="201"
+                stroke-linecap="round" transform="rotate(-90 40 40)"
+                id="ring2" class="ring-progress"/>
+            </svg>
+            <span class="metric-val" id="metricRisk">—</span>
+            <span class="metric-label">RISK LEVEL</span>
+          </div>
+          <div class="metric-box">
+            <svg class="ring-svg" viewBox="0 0 80 80">
+              <circle cx="40" cy="40" r="32" stroke="#1a2a3a" stroke-width="6" fill="none"/>
+              <circle cx="40" cy="40" r="32" stroke="#ffe500" stroke-width="6" fill="none"
+                stroke-dasharray="201" stroke-dashoffset="201"
+                stroke-linecap="round" transform="rotate(-90 40 40)"
+                id="ring3" class="ring-progress"/>
+            </svg>
+            <span class="metric-val" id="metricInteg">—</span>
+            <span class="metric-label">INTEGRITY</span>
+          </div>
+        </div>
+
+        <!-- Face Detection Box Info -->
+        <div class="face-box-info" id="faceBoxInfo"></div>
+      </div>
+    </section>
+
+    <!-- Blockchain Panel -->
+    <section class="panel chain-panel">
+      <div class="panel-header">
+        <span class="panel-tag">03</span>
+        <h2>CHAIN RECORD</h2>
+        <div class="panel-line"></div>
+      </div>
+
+      <div class="chain-status" id="chainStatus">
+        <div class="chain-item">
+          <span class="chain-label">NETWORK</span>
+          <span class="chain-val">Ethereum Sepolia</span>
+        </div>
+        <div class="chain-item">
+          <span class="chain-label">CONTRACT</span>
+          <span class="chain-val mono" id="contractAddr">Not set</span>
+        </div>
+        <div class="chain-item">
+          <span class="chain-label">WALLET</span>
+          <span class="chain-val" id="walletAddr">Not connected</span>
+        </div>
+        <div class="chain-item">
+          <span class="chain-label">TX HASH</span>
+          <span class="chain-val mono" id="txHash">—</span>
+        </div>
+        <div class="chain-item">
+          <span class="chain-label">STATUS</span>
+          <span class="chain-val" id="chainTxStatus">PENDING</span>
+        </div>
+      </div>
+
+      <div class="chain-actions">
+        <button class="btn-chain" id="connectWalletBtn" onclick="connectWallet()">
+          <span>CONNECT METAMASK</span>
+        </button>
+        <button class="btn-chain btn-record hidden" id="recordBtn" onclick="recordOnBlockchain()">
+          <span>RECORD ON-CHAIN</span>
+        </button>
+      </div>
+
+      <div class="chain-explorer hidden" id="chainExplorer">
+        <a href="#" id="explorerLink" target="_blank" class="explorer-link">
+          VIEW ON ETHERSCAN ›
+        </a>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Log Terminal -->
+  <div class="terminal-panel">
+    <div class="terminal-header">
+      <span class="terminal-title">SYSTEM LOG</span>
+      <div class="terminal-dots">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+    <div class="terminal-body" id="terminalBody">
+      <div class="log-line"><span class="log-time">[00:00:00]</span> DeepTrust AI Neural Verification System v2.0 initialized</div>
+      <div class="log-line"><span class="log-time">[00:00:01]</span> ViT Model: prithivMLmods/Deep-Fake-Detector-v2 loaded</div>
+      <div class="log-line"><span class="log-time">[00:00:02]</span> MediaPipe FaceDetection module active</div>
+      <div class="log-line"><span class="log-time">[00:00:02]</span> Ethereum Sepolia chain connection established</div>
+      <div class="log-line success"><span class="log-time">[00:00:03]</span> ✅ All systems nominal. Awaiting input.</div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
