@@ -1,21 +1,39 @@
-# DeepTrust AI — Setup Guide
+# DeepTrust AI 🔍⛓️
+
+Blockchain-verified deepfake detector. Upload face image → AI flag real/fake → verdict + image hash record on-chain (Ethereum Sepolia), independently checkable via Etherscan.
+
+🏆 Top project, KIET AI + Blockchain Bootcamp.
+
+## What It Do
+
+- Detect deepfake face image via fine-tuned Vision Transformer (ViT)
+- Flask REST API serve inference
+- Solidity smart contract store verdict + hash on Sepolia testnet — permanent, tamper-proof, verify-anywhere
+- MetaMask connect, on-chain record button in UI
+
+## Stack
+
+- **Backend:** Python, Flask, HuggingFace (ViT model), Mediapipe
+- **Blockchain:** Solidity, Ethereum (Sepolia testnet), Remix IDE, Ethers.js, MetaMask
+- **Frontend:** HTML, CSS, vanilla JS
 
 ## Folder Structure
+
 ```
 deeptrust-ai/
-├── index.html           ← Open this in browser
+├── index.html            ← open this in browser
 ├── styles.css
 ├── app.js
 ├── backend/
-│   ├── app.py           ← Flask server
+│   ├── app.py            ← Flask server
 │   ├── deepfake_model.py
 │   └── requirements.txt
-└── VerificationStore.sol ← Deploy on Remix
+└── VerificationStore.sol ← deploy via Remix
 ```
 
----
+## Setup
 
-## 1. Backend Setup
+### 1. Backend
 
 ```bash
 cd backend
@@ -23,52 +41,44 @@ pip install -r requirements.txt
 python app.py
 ```
 
-Server starts at **http://localhost:5000**
+Server run at `http://localhost:5000`. First run download ViT model (~350MB from HuggingFace) — patience need.
 
-> First run downloads the ViT model (~350MB from Hugging Face — be patient)
+### 2. Frontend
 
----
+Open `index.html` direct in browser, or use VS Code Live Server (avoid CORS headache).
 
-## 2. Frontend
+### 3. Blockchain (one-time)
 
-Just open `index.html` in your browser (or use VS Code Live Server).
+1. Go [remix.ethereum.org](https://remix.ethereum.org)
+2. Create `VerificationStore.sol`, paste contract code
+3. Compile Solidity 0.8.20+
+4. Deploy & Run → Environment: Injected Provider – MetaMask
+5. MetaMask set to **Sepolia testnet** (get test ETH: [sepoliafaucet.com](https://sepoliafaucet.com))
+6. Deploy → confirm in MetaMask
+7. Copy deployed contract address
+8. Paste into `backend/app.py` → `CONTRACT_ADDRESS = "0x..."`
+9. Restart backend
 
-> ⚠️ You may need to allow CORS in your browser or serve via Live Server if you hit CORS errors.
-
----
-
-## 3. Blockchain (One-Time Setup)
-
-1. Go to **https://remix.ethereum.org**
-2. Create `VerificationStore.sol`, paste the contract code
-3. Compile with Solidity 0.8.20+
-4. In "Deploy & Run" → Environment: **Injected Provider – MetaMask**
-5. Make sure MetaMask is on **Sepolia testnet** (get test ETH from https://sepoliafaucet.com)
-6. Click **Deploy** → confirm in MetaMask
-7. Copy the deployed address
-8. Paste it in `backend/app.py` → `CONTRACT_ADDRESS = "0x..."`
-9. Restart the backend
-
----
-
-## Usage
+## Usage Flow
 
 1. Start backend: `python backend/app.py`
 2. Open `index.html`
-3. Click **CONNECT METAMASK** (Panel 03)
-4. Upload a face image (Panel 01)
+3. Click **CONNECT METAMASK**
+4. Upload face image
 5. Click **INITIATE ANALYSIS**
-6. View results (Panel 02)
-7. Click **RECORD ON-CHAIN** to store on Sepolia
+6. View verdict
+7. Click **RECORD ON-CHAIN** → verdict + hash saved to Sepolia
 
----
-
-## Troubleshooting
+## Troubleshoot
 
 | Error | Fix |
-|-------|-----|
+|---|---|
 | `No module named mediapipe` | `pip install mediapipe==0.10.14` |
-| `No face detected` | Use a clear, well-lit front-facing photo |
-| `500 Internal Server Error` | Check terminal — usually model not loaded yet |
-| MetaMask wrong network | Switch to Sepolia in MetaMask |
-| CORS error in browser | Use Live Server extension in VS Code |
+| `No face detected` | use clear, well-lit front-face photo |
+| `500 Internal Server Error` | check terminal, model probably still loading |
+| MetaMask wrong network | switch to Sepolia |
+| CORS error | use Live Server extension |
+
+## License
+
+MIT
